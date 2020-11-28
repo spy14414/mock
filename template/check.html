@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head> 
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <meta http-equiv="Cache-control" content="no-cache" /> 
+  <meta http-equiv="Cache" content="no-cache" /> 
+  <title>mockup图片转换</title> 
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    #app {
+      text-align: center;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      /*width: 360px;*/
+      /*height: 300px;*/
+    }
+    #help {
+      width: 400px;
+      border: 3px solid red;
+      text-align: left;
+    }
+    #block1{
+      display: flex;  
+      flex-direction: row;
+      justify-content: space-around;
+    }
+    .content {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .success {
+      flex:1;
+      color: blue;
+      /*position: absolute;*/
+      top: 40%;
+      left: 28%;
+    }
+    .fail {
+      flex:1;
+      color: red;
+      /*position: absolute;*/
+      top: 40%;
+      right: 28%;
+    }
+  </style>
+ </head>      
+ <body> 
+   <div id="app"> 
+    <div> 
+     <h1>mockup图片转换</h1> 
+     <div id="block1">
+       <div class="success"> 
+        <div>
+         验证通过列表如下：
+        </div> 
+        <div v-for="item in correctFileList">
+          {{item}} 
+        </div> 
+       </div> 
+       <div>
+       <div class="content"> 
+        <el-upload action="" ref="upload" :http-request="uploadFile" name="file" accept=".png" class="upload-demo" multiple="" drag="" :file-list="fileList"> 
+           <i class="el-icon-upload"></i> 
+           <div class="el-upload__text">
+             将文件拖到此处
+           </div> 
+           <div class="el-upload__tip" slot="tip">
+            只能上传png文件
+           </div> 
+          </el-upload> 
+         </div>
+       <el-button style="margin-top: 20px;" @click="rebuilt" type="primary">
+         清空列表
+        </el-button> 
+       </div>
+   
+       <div class="fail"> 
+        <div>
+         验证失败列表如下：
+        </div> 
+        <div v-for="item in errorFileList">
+          {{item}} 
+        </div> 
+       </div> 
+       </div>
+    </div>
+    <div id="help">
+      <h1>说明文档</h1>
+      <p>失败原因</p>
+      <ul>
+        <li>丢失颜色</li>
+        <li>色块内部颜色变化</li>
+        <li>引入其他非编码色块杂色</li>
+      </ul>
+    </div>
+   </div> 
+
+  <script>
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            loading: false,
+            fileList: [],
+            correctFileList: [],
+            errorFileList: [],
+          };
+        },
+        methods: {
+          rebuilt() {
+            (this.correctFileList = []), (this.errorFileList = []);
+          },
+          uploadFile(file) {
+            const param = new FormData();
+            param.append("file", file.file);
+            axios
+              .post("http://47.101.158.77/mockup_vertext/mockup_check", param, {
+                headers: { "Content-Type": "multipart/form-data" },
+              })
+              .then((res) => {
+                // console.log(res);
+                if (res.data === "False") {
+                  this.errorFileList.push(file.file.name);
+                } else {
+                  this.correctFileList.push(file.file.name);
+                }
+                console.log(this.errorFileList);
+                this.fileList = [];
+              })
+              .catch((error) => console.log(error));
+          },
+        },
+      });
+    </script>   
+ </body>
+</html>

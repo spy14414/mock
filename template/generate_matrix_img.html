@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>mockup图片转换</title>
+  </head>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    #app {
+      text-align: center;
+      width: 360px;
+      height: 300px;
+    }
+    #help {
+      border: 3px solid red;
+      text-align: left;
+    }
+    .content {
+      display: flex;
+      justify-content: space-around;
+    }
+  </style>
+  <body>
+    <div id="app">
+      <div>
+        <h1>mockup图片转换</h1>
+        <div class="content">
+          <el-upload id="file" name="img" accept=".png" class="upload-demo" :auto-upload="false" drag multiple>
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击添加</em></div>
+            <div class="el-upload__tip" slot="tip">只能上传png文件</div>
+          </el-upload>
+          <el-button :loading="loading" style="margin-left: 10px;" @click="upload" type="primary">提交</el-button>
+        </div>
+      </div>
+    </div>
+    <div id='help'>
+      <h1>说明文档</h1>
+      <p>1.命名请用英文，暂不支持中文</p>
+      <p>2.请上传mesh黑底，其余地方透明的png</p>
+      <p>3.做扭曲注意不要有点丢失、可以在工具(<a href="http://47.101.158.77/mockup_static/check.html">check</a>)上传进行检查</p>
+    </div>
+    <script>
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            loading: false,
+          };
+        },
+        methods: {
+          upload() {
+            this.loading = true;
+            const files = document.querySelector("#file input").files;
+            const fd = new FormData();
+            console.log(files);
+            for (let i = 0; i < files.length; i++) {
+              const file = files[i];
+              fd.append("img" + i, file);
+            }
+            fetch("http://47.101.158.77/mockup_vertext/mockup_generate_vertext", {
+              method: "POST",
+              body: fd,
+            })
+              .then((response) => {
+                return response.blob();
+              })
+              .then((data) => {
+                console.log(data);
+                let blobUrl = window.URL.createObjectURL(data);
+                window.open(blobUrl);
+              })
+              .catch((e) => console.log(e))
+              .finally(() => {
+                this.loading = false;
+              });
+          },
+          subPicForm() {},
+        },
+      });
+    </script>
+  </body>
+</html>
+

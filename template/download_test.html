@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mockup图片转换</title>
+  </head>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+  />
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    #app {
+      text-align: center;
+      width: 360px;
+      height: 300px;
+    }
+    .content {
+      display: flex;
+      justify-content: space-around;
+    }
+  </style>
+  <body>
+    <div id="app">
+      <div>
+        <h1>mockup图片转换</h1>
+        <div class="content">
+          <el-upload
+            ref="upload"
+            :http-request="uploadFile"
+            action=""
+            name="file"
+            accept=".png"
+            class="upload-demo"
+            :auto-upload="false"
+            multiple
+            drag
+            :on-change="handleChange"
+            :file-list="fileList"
+          >
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">
+              将文件拖到此处，或<em>点击添加</em>
+            </div>
+            <div class="el-upload__tip" slot="tip">只能上传png文件</div>
+          </el-upload>
+          <el-button
+            :loading="loading"
+            style="margin-left: 10px;"
+            @click="upload"
+            type="primary"
+            >提交</el-button
+          >
+        </div>
+      </div>
+    </div>
+    <script>
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            loading: false,
+            formDate: "",
+            fileList: [],
+          };
+        },
+        methods: {
+          handleChange(file, fileList) {
+            console.log(fileList);
+            if (fileList.length > 0) {
+              this.fileList = fileList.slice(0);
+            }
+          },
+          uploadFile(file) {
+            this.formDate.append("file", file.file);
+          },
+          upload() {
+            this.loading = true;
+            this.formDate = new FormData();
+            this.$refs.upload.submit();
+
+            // for (let i = 0; i < files.length; i++) {
+            //   const file = files[i];
+            //   fd.append("img" + i, file);
+            // }
+            fetch(
+              "http://47.101.158.77/mockup_vertext/download_test",
+              {
+                method: "POST",
+                body: this.formDate,
+              }
+            )
+              .then(function(res) {
+              const filename = res.headers.get('content-disposition').split(';')[1].split('=')[1]
+              
+              res.blob().then(blob => {
+                const link = document.createElement('a')
+                link.style.display = 'none'
+                // a 标签的 download 属性就是下载下来的文件名
+                link.download = filename
+                link.href = URL.createObjectURL(blob)
+                document.body.appendChild(link)
+                link.click()
+                // 释放的 URL 对象以及移除 a 标签
+                URL.revokeObjectURL(link.href)
+                document.body.removeChild(link)
+               })
+            })
+              .catch((e) => console.log(e))
+              .finally(() => {
+                this.loading = false;
+              });
+          },
+          subPicForm() {},
+        },
+      });
+    </script>
+  </body>
+</html>
+
